@@ -61,8 +61,24 @@ AV.Cloud.define("getJwcCookie", function(request, response) {
 });
 
 
-AV.Cloud.define("indexOfText", function(request, response) {
-    var subStr = "test";
-    var str = "testcnm";
-    response.success(str.indexOf(subStr));
+AV.Cloud.define("getVerifyCodePic", function(request, response) {
+    var targetUrl = 'http://210.41.224.117/Login/xLogin/yzmDvCode.asp?k=552835&t=1429341700824';
+    var cookie = 'ASPSESSIONIDCSSTBCBD=KPMDGHMAKDNBFHAMKLONDNKF';
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+            'Referer': 'http://210.41.224.117/Login/xLogin/Login.asp'
+        },
+        success: function(httpResponse) {
+            console.log(httpResponse.text);
+            console.log(httpResponse.headers);
+//            response.success('success');
+            response.success(httpResponse.data);
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
 });
