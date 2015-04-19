@@ -144,35 +144,37 @@ AV.Cloud.define("getLoginCookieAndCodeKey", function(request, response) {
 });
 
 AV.Cloud.define("loginPost", function(request, response) {
-    var cheerio = require('cheerio');
-    var semicolonStr = ';';
-    var cookie = '';
-    var codeKey = '';
+    var cookie = request.params['cookie'];
+    var codeKey = request.params['codeKey'];
+    var username = request.params['username'];
+    var pwd = request.params['pwd'];
+    var verifyCode = request.params['verifyCode'];
 
-//    AV.Cloud.httpRequest({
-//        method: 'POST',
-//        url: 'http://210.41.224.117/Login/xLogin/Login.asp',
-//        headers: {
-//            'Cookie': 'ASPSESSIONIDCQSSDCAC=PBNBFBCCFBNEDOLMPEBINEIF',
-//            'Referer': 'http://210.41.224.117/Login/xLogin/Login.asp'
-//        },
-//        body: {
-//            txtId: '2011051023',
-//            txtMM: 'Hn5201314',
-//            WinW: '1600',
-//            WinH: '860',
-//            verifycode: 'ejt',
-//            codeKey: '383190',
-//            Login: 'Check'
-//        },
-//        success: function(httpResponse) {
-//            console.log(httpResponse.text);
-//            console.log(httpResponse.headers);
-//            response.success('success');
-//        },
-//        error: function(httpResponse) {
-//            console.error('Request failed with response code ' + httpResponse.status);
-//            response.success('Error ');
-//        }
-//    });
+    AV.Cloud.httpRequest({
+        method: 'POST',
+        url: 'http://210.41.224.117/Login/xLogin/Login.asp',
+        headers: {
+            'Cookie': cookie,
+            'Referer': 'http://210.41.224.117/Login/xLogin/Login.asp'
+        },
+        body: {
+            txtId: username,
+            txtMM: pwd,
+            WinW: '1600',
+            WinH: '860',
+            verifycode: verifyCode,
+            codeKey: codeKey,
+            Login: 'Check'
+        },
+        success: function(httpResponse) {
+            response.success(httpResponse.headers);
+            console.log(httpResponse.headers);
+            console.log(httpResponse.text);
+            response.success('success');
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
 });
