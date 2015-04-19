@@ -78,7 +78,7 @@ AV.Cloud.define("getVerifyCodePic", function(request, response) {
             datePrama = data['datePrama'];
             targetUrl = 'http://210.41.224.117/Login/xLogin/yzmDvCode.asp?k=' + codeKey + '&t=' +datePrama;
 
-            var responseObj = {"url":targetUrl,"cookie":cookie};
+            var responseObj = {"url":targetUrl,"cookie":cookie,codeKey:codeKey};
             response.success(responseObj);
 //            AV.Cloud.httpRequest({
 //                url: targetUrl,
@@ -148,21 +148,7 @@ AV.Cloud.define("loginPost", function(request, response) {
     var semicolonStr = ';';
     var cookie = '';
     var codeKey = '';
-    AV.Cloud.run('getLoginPostInfo', {}, {
-        success: function(data){
-            var cookiesArray = data['cookies'];
-            for(var i = 0; i < cookiesArray.length; i++)
-            {
-                cookie += cookiesArray[i];
-            }
-            codeKey = data['codeKey'];
-            console.log(codeKey);
-        },
-        error: function(err){
-            console.log(err);
-            //处理调用失败
-        }
-    });
+
 //    AV.Cloud.httpRequest({
 //        method: 'POST',
 //        url: 'http://210.41.224.117/Login/xLogin/Login.asp',
