@@ -78,23 +78,25 @@ AV.Cloud.define("getVerifyCodePic", function(request, response) {
             datePrama = data['datePrama'];
             targetUrl = 'http://210.41.224.117/Login/xLogin/yzmDvCode.asp?k=' + codeKey + '&t=' +datePrama;
 
-            AV.Cloud.httpRequest({
-                url: targetUrl,
-                headers: {
-                    'Cookie': cookie,
-                    'Referer': 'http://210.41.224.117/Login/xLogin/Login.asp'
-                },
-                success: function(httpResponse) {
-                    console.log(httpResponse.text);
-                    console.log(httpResponse.headers);
-//            response.success('success');
-                    response.success(httpResponse.text);
-                },
-                error: function(httpResponse) {
-                    console.error('Request failed with response code ' + httpResponse.status);
-                    response.success('Error ');
-                }
-            });
+            var responseObj = {url:targetUrl,cookie:cookie};
+            response.success(responseObj);
+//            AV.Cloud.httpRequest({
+//                url: targetUrl,
+//                headers: {
+//                    'Cookie': cookie,
+//                    'Referer': 'http://210.41.224.117/Login/xLogin/Login.asp'
+//                },
+//                success: function(httpResponse) {
+//                    console.log(httpResponse.text);
+//                    console.log(httpResponse.headers);
+////            response.success('success');
+//                    response.success(httpResponse.text);
+//                },
+//                error: function(httpResponse) {
+//                    console.error('Request failed with response code ' + httpResponse.status);
+//                    response.success('Error ');
+//                }
+//            });
         },
         error: function(err){
             console.log(err);
