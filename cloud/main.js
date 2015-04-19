@@ -78,7 +78,7 @@ AV.Cloud.define("getVerifyCodePic", function(request, response) {
             datePrama = data['datePrama'];
             targetUrl = 'http://210.41.224.117/Login/xLogin/yzmDvCode.asp?k=' + codeKey + '&t=' +datePrama;
 
-            var responseObj = {url:targetUrl,cookie:cookie};
+            var responseObj = {"url":targetUrl,"cookie":cookie};
             response.success(responseObj);
 //            AV.Cloud.httpRequest({
 //                url: targetUrl,
