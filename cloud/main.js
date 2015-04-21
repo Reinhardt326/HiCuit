@@ -6,7 +6,7 @@ AV.Cloud.define("hello", function(request, response) {
 
 AV.Cloud.define("getJwcScore", function(request, response) {
     var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/UserPub/GetCjByXh.asp?UTp=Xs';
-    var cookie = 'ASPSESSIONIDASQQBRAA=ADAHKIOBLFKBCAPOHLDFMJCD';
+    var cookie = request.params['cookie'];
     var cheerio = require('cheerio');
     var iconv = require('iconv-lite');
     AV.Cloud.httpRequest({
@@ -15,7 +15,6 @@ AV.Cloud.define("getJwcScore", function(request, response) {
             'Cookie': cookie,
         },
         success: function (httpResponse) {
-            console.log(httpResponse.headers);
             var html = iconv.decode(httpResponse.buffer, 'GBK');
             var $ = cheerio.load(html);
             var lastDiv = $("div").last();
@@ -41,17 +40,20 @@ AV.Cloud.define("getJwcScore", function(request, response) {
                     }
                     else
                     {
-                        var scoreObj = {'score':score, 'semester':tempSemesterStr};
+                        var scoreObj = {score:score, semester:tempSemesterStr};
 //                        console.log(scoreObj);
                         courseScoreArray.push(scoreObj);
                     }
                 }
             });
-            console.log(courseNameArray);
-            console.log(courseScoreArray);
-            console.log(courseNameArray.length);
-            console.log(courseScoreArray.length);
-            response.success('success');
+            var courseScoreInfoArray = new Array();
+            for(var i = 0; i < courseNameArray.length; i++)
+            {
+                var scoreObj = courseScoreArray[i];
+                var courseScoreObj = {courseName: courseNameArray[i], courseScore: scoreObj['score'], semester: scoreObj['semester']};
+                courseScoreInfoArray.push(courseScoreObj);
+            }
+            response.success(courseScoreInfoArray);
         },
         error: function (httpResponse) {
             console.error('Request failed with response code ' + httpResponse.status);
@@ -213,7 +215,8 @@ AV.Cloud.define("getJwcCookie", function(request, response) {
                     console.log('jwcTylogin return success!');
                     if(handledCookie == data)
                     {
-                        response.success(handledCookie);
+                        var responseObj = {cookie:handledCookie}
+                        response.success(responseObj);
                     }
                 },
                 error: function(err){
