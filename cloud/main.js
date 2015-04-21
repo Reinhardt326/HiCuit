@@ -4,9 +4,9 @@ AV.Cloud.define("hello", function(request, response) {
   response.success("Hello world!");
 });
 
-AV.Cloud.define("getJwcCookie", function(request, response) {
+AV.Cloud.define("getJwcScore", function(request, response) {
     var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/UserPub/GetCjByXh.asp?UTp=Xs';
-    var cookie = 'ASPSESSIONIDQCSSCSDD=DMMHGOODMFMAAMJEFJAEAJMG';
+    var cookie = 'ASPSESSIONIDASQQBRAA=ADAHKIOBLFKBCAPOHLDFMJCD';
     var cheerio = require('cheerio');
     var iconv = require('iconv-lite');
     AV.Cloud.httpRequest({
@@ -168,8 +168,290 @@ AV.Cloud.define("loginPost", function(request, response) {
         },
         success: function(httpResponse) {
             response.success(httpResponse.headers);
-            console.log(httpResponse.headers);
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+
+AV.Cloud.define("qqLogin", function(request, response) {
+    var targetUrl = 'http://210.41.224.117/Login/qqLogin.asp';
+    var cookie = 'ASPSESSIONIDCSQQBADC=MDEHDLBCHKLGGMIFFMIPOGLA';
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
             console.log(httpResponse.text);
+            console.log(httpResponse.headers);
+            response.success('success');
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+AV.Cloud.define("getJwcCookie", function(request, response) {
+    var scoreUrl = 'http://jwc.cuit.edu.cn/Jxgl/Xs/MainMenu.asp';
+    var loginCookie = request.params['loginCookie'];
+    AV.Cloud.httpRequest({
+        url: scoreUrl,
+        success: function(httpResponse) {
+            var untreatedCookiesArray = httpResponse.headers['set-cookie'];
+            var untreatedCookie = untreatedCookiesArray[0];
+            var lastIndex = untreatedCookie.indexOf(';');
+            var handledCookie = untreatedCookie.slice(0,lastIndex);
+
+            AV.Cloud.run('jwcTylogin', {cookie:handledCookie,loginCookie:loginCookie}, {
+                success: function(data){
+                    console.log('jwcTylogin return success!');
+                    if(handledCookie == data)
+                    {
+                        response.success(handledCookie);
+                    }
+                },
+                error: function(err){
+                    console.log(err);
+                    //处理调用失败
+                }
+            });
+
+//            response.success(handledCookie);
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+
+AV.Cloud.define("jwcTylogin", function(request, response) {
+    var cheerio = require('cheerio');
+    var iconv = require('iconv-lite');
+    var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/Login/tyLogin.asp';
+    var cookie = request.params['cookie'];
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
+            var refreshUrl = '';
+            var location = httpResponse.headers['location'];
+            if(typeof location == 'undefined')
+            {
+                var $ = cheerio.load(httpResponse.text);
+                $("meta").each(function (i, e) {
+                    if($(e).attr('http-equiv') == 'refresh')
+                    {
+                        var originalStr = $(e).attr('content');
+                        var index = originalStr.indexOf('http');
+                        refreshUrl = originalStr.slice(index);
+                    }
+                });
+                var loginCookie = request.params['loginCookie'];
+                AV.Cloud.run('qqLoginWithParam', {url:refreshUrl,loginCookie:loginCookie,jwcCookie:cookie}, {
+                    success: function(data){
+                        console.log('qqLoginWithParam return success');
+                        response.success(data);
+                    },
+                    error: function(err){
+                        console.log(err);
+                        //处理调用失败
+                    }
+                });
+            }
+            else
+            {
+                AV.Cloud.run('getMainMenu', {cookie:cookie}, {
+                    success: function(data){
+                        console.log('jwcTyLogin getMainMenu return success');
+                        response.success(data);
+                    },
+                    error: function(err){
+                        console.log(err);
+                        //处理调用失败
+                    }
+                });
+            }
+//            response.success('jwcTylogin Succees');
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+
+AV.Cloud.define("qqLoginWithParam", function(request, response) {
+    var targetUrl = request.params['url'];
+    var cookie = request.params['loginCookie'];
+    var jwcCookie = request.params['jwcCookie']
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
+            AV.Cloud.run('jwcTylogin', {cookie:jwcCookie}, {
+                success: function(data){
+                    console.log('jwcTylogin return success');
+                    response.success(data);
+                },
+                error: function(err){
+                    console.log(err);
+                    //处理调用失败
+                }
+            });
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+AV.Cloud.define("syLogin", function(request, response) {
+    var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/Login/syLogin.asp';
+    var cookie = 'ASPSESSIONIDASQQBRAA=NBPGKIOBCABMBKDNEGOCFANF';
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
+            console.log(httpResponse.text);
+            console.log(httpResponse.headers);
+            response.success('success');
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+AV.Cloud.define("getMainMenu", function(request, response) {
+    var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/Xs/MainMenu.asp';
+    var cookie = request.params['cookie'];
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
+            var location = httpResponse.headers['location'];
+            if(typeof location == 'undefined')
+            {
+                //正常获取
+                console.log("return cookie");
+//                response.success(cookie);
+                response.success(cookie);
+            }
+            else
+            {
+                if(location.indexOf('MainMenu') >= 0)
+                {
+//                    AV.Cloud.run('getMainMenu', {cookie:cookie}, {
+//                        success: function(data){
+//                            console.log('success');
+//                        },
+//                        error: function(err){
+//                            console.log(err);
+//                            //处理调用失败
+//                        }
+//                    });
+                    console.log("main");
+                }
+                else if(location.indexOf('UserPub') >= 0)
+                {
+                    //导航到userPubLogin
+                    AV.Cloud.run('userPubLogin', {cookie:cookie}, {
+                        success: function(data){
+                            console.log('userPubLogin return success');
+                            response.success(data);
+                        },
+                        error: function(err){
+                            console.log(err);
+                            //处理调用失败
+                        }
+                    });
+                }
+            }
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+AV.Cloud.define("userPubLogin", function(request, response) {
+    var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/UserPub/Login.asp?UTp=Xs';
+    var cookie = request.params["cookie"];
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
+            AV.Cloud.run('getMainMenu', {cookie:cookie}, {
+                success: function(data){
+                    console.log('userPubLogin getMainMenu success');
+                    response.success(data);
+                },
+                error: function(err){
+                    console.log(err);
+                    //处理调用失败
+                }
+            });
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+AV.Cloud.define("userPubLoginWithParam", function(request, response) {
+    var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/UserPub/Login.asp?UTp=Xs&Func=Login';
+    var cookie = 'ASPSESSIONIDASQQBRAA=NBPGKIOBCABMBKDNEGOCFANF';
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
+            console.log(httpResponse.text);
+            console.log(httpResponse.headers);
+            response.success('success');
+        },
+        error: function(httpResponse) {
+            console.error('Request failed with response code ' + httpResponse.status);
+            response.success('Error ');
+        }
+    });
+});
+
+AV.Cloud.define("getWindow", function(request, response) {
+    var targetUrl = 'http://jwc.cuit.edu.cn/Jxgl/GetWindow.asp?Ret=%2FJxgl%2FUserPub%2FLogin%2Easp%3FUTp%3DXs';
+    var cookie = 'ASPSESSIONIDASQQBRAA=KAAJKIOBNIPKBDJINKKDNGOC';
+    AV.Cloud.httpRequest({
+        url: targetUrl,
+        headers: {
+            'Cookie': cookie,
+        },
+        success: function(httpResponse) {
+            console.log(httpResponse.text);
+            console.log(httpResponse.headers);
             response.success('success');
         },
         error: function(httpResponse) {
