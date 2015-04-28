@@ -5,11 +5,15 @@ AV.Cloud.define("getCookieWithLibraryLoginPage", function(request, response) {
     AV.Cloud.httpRequest({
         url: targetUrl,
         success: function(httpResponse) {
-            response.success(httpResponse.headers['set-cookie']);
-            var cookie = httpResponse.headers['set-cookie'];
+            var cookies = httpResponse.headers['set-cookie'];
             var number = request.params['username'];
             var passwd = request.params['passwd'];
-            AV.Cloud.run('libraryLoginPost', {cookie:cookie,number:number,passwd:passwd}, {
+
+            var cookie = cookies[0];
+            var semicolonStr = ';';
+            var lastIndex = cookie.indexOf(semicolonStr);
+            var handledCookie = cookie.slice(0,lastIndex);
+            AV.Cloud.run('libraryLoginPost', {cookie:handledCookie,number:number,passwd:passwd}, {
                 success: function(data){
                     response.success(data);
                 },
